@@ -4,7 +4,15 @@ import { db } from "../database/database.js"
 export async function getCustomers(req, res){
     try {
         const costumers = await db.query(`SELECT * FROM customers`)
-        res.send(costumers.rows)
+        const results = costumers.rows.map(customer => {
+            const newBirthDate = dayjs(customer.birthday).format("YYYY-MM-DD")
+            return {
+                name: customer.name,
+                phone: customer.phone,
+                cpf: customer.cpf,
+                birthday: newBirthDate}
+        })
+        res.send(results)
     } catch (error) {
         res.status(500).send(error.message)
     }
@@ -26,9 +34,17 @@ export async function postNewCustomer(req, res){
 export async function getCustomerById(req, res){
     const {id} = req.params
     try {
-        const costumer = await db.query(`SELECT * FROM customers WHERE id=$1`, [id])
-        if(!costumer.rowCount) return res.sendStatus(404)
-        res.send(costumer.rows[0])
+        const customer = await db.query(`SELECT * FROM customers WHERE id=$1`, [id])
+        if(!customer.rowCount) return res.sendStatus(404)
+        const result = customer.rows.map(customer => {
+            const newBirthDate = dayjs(customer.birthday).format("YYYY-MM-DD")
+            return {
+                name: customer.name,
+                phone: customer.phone,
+                cpf: customer.cpf,
+                birthday: newBirthDate}
+        })
+        res.send(result[0])
     } catch (error) {
         res.status(500).send(error.message)
     }
