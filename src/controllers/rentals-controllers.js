@@ -28,11 +28,13 @@ export async function getRentals(req, res) {
 export async function postNewRental(req, res) {
     const { customerId, gameId, daysRented } = req.body
     try {
-        const searchValidRental = await db.query(`
-        SELECT "gameId", "customerId" FROM rentals
-            JOIN games ON games.id=$1
-            JOIN customers ON customers.id=$2`, [gameId, customerId])
-        if (!searchValidRental.rowCount) return res.sendStatus(400)
+    //    const searchValidRental = await db.query(`
+     //   SELECT "gameId", "customerId" FROM rentals
+      //      JOIN games ON games.id=$1
+     //       JOIN customers ON customers.id=$2`, [gameId, customerId])
+        const existentGame = await db.query(`SELECT * FROM games WHERE games.id=$1`, [gameId])
+        const registeredCustomer = await db.query(`SELECT * FROM customers WHERE customers.id=$1`, [customerId])
+        if (!existentGame.rowCount || !registeredCustomer.rowCount) return res.sendStatus(400)
         const availableStock = await db.query(`
         SELECT * FROM games WHERE games.id=$1
             AND (SELECT COUNT(*) FROM rentals 
