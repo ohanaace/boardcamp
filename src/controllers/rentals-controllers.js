@@ -53,7 +53,7 @@ export async function finishRental(req, res) {
     try {
         const currentRental = await db.query(`SELECT * FROM rentals WHERE rentals.id=$1`, [id])
         if (!currentRental.rowCount) return res.sendStatus(404)
-        const { daysRented, rentDate, originalPrice, returnDate, gameId } = currentRental.rows[0]
+        const { daysRented, rentDate, returnDate } = currentRental.rows[0]
         if (returnDate !== null) return res.sendStatus(400)
         const devolutionDate = dayjs().format("YYYY-MM-DD")
         const daysDiff = dayjs(devolutionDate).diff(rentDate, "d")
@@ -75,8 +75,13 @@ export async function finishRental(req, res) {
 }
 
 export async function deleteRental(req, res) {
+    const { id } = req.params
     try {
-
+        const rental = await db.query(`SELECT * FROM rentals WHERE rentals.id=$1`, [id])
+        if (!rental.rowCount) return res.sendStatus(404)
+        if (rental.rows[0].returnDate === null) return res.sendStatus(400)
+        await db.query(`DELETE FROM rentals WHERE rentals.id=$1`, [id])
+        res.sendStatus(200)
     } catch (error) {
         res.status(500).send(error.message)
     }
