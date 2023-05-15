@@ -3,9 +3,14 @@ import { db } from "../database/database.js"
 
 export async function getRentals(req, res) {
     try {
-        const result = await db.query(`SELECT * FROM rentals;`)
+        const result = await db.query(`SELECT rentals.*, games.name AS "gameName", games.id, customers.id, customers.name AS "customerName" FROM rentals
+            JOIN games ON games.id = rentals."gameId"
+            JOIN customers ON customers.id = rentals."customerId";`)
+            const {gameName, gameId, customerName, customerId} = result.rows[0]
         const rentals = result.rows.map(rental => {
             const date = dayjs(rental.rentDate).format("YYYY-MM-DD")
+            const gameInfo = {id: gameId, name: gameName}
+            const customerInfo = {id: customerId, name: customerName}
             const returnedDate = rental.returnDate === null ? null : dayjs(rental.returnDate).format("YYYY-MM-DD")
             return {
                 id: rental.id,
@@ -15,7 +20,9 @@ export async function getRentals(req, res) {
                 daysRented: rental.daysRented,
                 returnDate: returnedDate,
                 originalPrice: rental.originalPrice,
-                delayFee: rental.delayFee
+                delayFee: rental.delayFee,
+                game: gameInfo,
+                customer: customerInfo
             }
         })
         res.send(rentals)
@@ -28,10 +35,6 @@ export async function getRentals(req, res) {
 export async function postNewRental(req, res) {
     const { customerId, gameId, daysRented } = req.body
     try {
-    //    const searchValidRental = await db.query(`
-     //   SELECT "gameId", "customerId" FROM rentals
-      //      JOIN games ON games.id=$1
-     //       JOIN customers ON customers.id=$2`, [gameId, customerId])
         const existentGame = await db.query(`SELECT * FROM games WHERE games.id=$1`, [gameId])
         const registeredCustomer = await db.query(`SELECT * FROM customers WHERE customers.id=$1`, [customerId])
         if (!existentGame.rowCount || !registeredCustomer.rowCount) return res.sendStatus(400)
