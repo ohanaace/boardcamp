@@ -3,6 +3,21 @@ import { db } from "../database/database.js"
 
 export async function getRentals(req, res){
     try {
+        const result = await db.query(`SELECT * FROM rentals;`)
+        const rentals = result.rows.map(rental => {
+            const date = dayjs(rental.rentDate).format("YYYY-MM-DD")
+            return {
+                id: rental.id,
+                customerId: rental.customerId,
+                gameId: rental.gameId,
+                rentDate: date,
+                daysRented: rental.daysRented,
+                returnDate: rental.returnDate,
+                originalPrice: rental.OriginalPrice,
+                delayFee: rental.delayFee
+            }
+        })
+        res.send(rentals)
         
     } catch (error) {
         res.status(500).send(error.message)
