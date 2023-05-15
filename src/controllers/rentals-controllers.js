@@ -39,7 +39,7 @@ export async function postNewRental(req, res){
         const date = dayjs().format("YYYY-MM-DD")
         await db.query(`INSERT INTO rentals ("gameId", "customerId", "rentDate", "daysRented", "returnDate", "originalPrice", "delayFee")
         SELECT $1, $2, $4, $3, null, games."pricePerDay" * $3, null FROM games WHERE games.id=$1;`, [gameId, customerId, daysRented, date])
-        res.send(201)
+        res.sendStatus(201)
         
     } catch (error) {
         res.status(500).send(error.message)
