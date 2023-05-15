@@ -65,8 +65,9 @@ export async function finishRental(req, res) {
         console.log(daysDiff)
         let delayFee = 0
         if (daysDiff > daysRented) {
-           const pricePerDay = originalPrice / daysRented
-            delayFee = pricePerDay * daysDiff
+           const pricePerDay = parseInt(originalPrice / daysRented)
+           console.log(pricePerDay)
+            delayFee = pricePerDay * (daysDiff - daysRented)
         }
         await db.query(`UPDATE rentals SET "returnDate"=$1, "delayFee"=$2 WHERE rentals.id=$3`, [devolutionDate, delayFee, id])
         res.sendStatus(200)
