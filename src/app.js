@@ -7,4 +7,5 @@ app.use(express.json())
 app.use(cors())
 app.use(routers)
 
-app.listen(5000, () => console.log("Rodando na porta 5000"))
+const PORT = process.env.PORT || 4000
+app.listen(PORT, () => console.log(`Rodando na porta ${PORT}`))
